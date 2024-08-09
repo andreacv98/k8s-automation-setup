@@ -1,0 +1,32 @@
+---
+- hosts: all
+  become: true
+  # Python interpreter
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  tasks:
+    - name: Install requirements
+      apt:
+        name:
+          - docker.io
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+        state: present
+        update_cache: yes
+
+    - name: Add Kubernetes repo
+      apt_repository:
+        repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
+        state: present
+        update_cache: yes
+    
+    - name: Install Kubernetes
+      apt:
+        name:
+          - kubelet
+          - kubeadm
+          - kubectl
+        state: present
+        update_cache: yes
