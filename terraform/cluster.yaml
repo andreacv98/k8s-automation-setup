@@ -1,0 +1,36 @@
+# RKE Cluster Configuration
+nodes:
+  - address: 10.0.0.147
+    user: vagrant
+    role:
+      - controlplane
+      - etcd
+    ssh_key_path: /home/andrea/vscode/k8s-automation-setup/.vagrant/machines/k8s-manager/virtualbox/private_key
+  - address: 10.0.0.148
+    user: vagrant
+    role:
+      - worker
+    ssh_key_path: /home/andrea/vscode/k8s-automation-setup/.vagrant/machines/k8s-worker-1/virtualbox/private_key
+  - address: 10.0.0.149
+    user: vagrant
+    role:
+      - worker
+    ssh_key_path: /home/andrea/vscode/k8s-automation-setup/.vagrant/machines/k8s-worker-2/virtualbox/private_key
+
+# Enable use of SSH agent to use SSH private keys with passphrase
+# This requires the environment `SSH_AUTH_SOCK` configured pointing
+#to your SSH agent which has the private key added
+#ssh_agent_auth: true
+
+
+# If set to true, RKE will not fail when unsupported Docker version
+# are found
+ignore_docker_version: false
+
+# Enable running cri-dockerd
+# Up to Kubernetes 1.23, kubelet contained code called dockershim
+# to support Docker runtime. The replacement is called cri-dockerd
+# and should be enabled if you want to keep using Docker as your
+# container runtime
+# Only available to enable in Kubernetes 1.21 and higher
+enable_cri_dockerd: true
