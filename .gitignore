@@ -1,6 +1,9 @@
 # vscode
 .vscode
 
+# Kubeconfig
+kube_config_cluster.yml
+
 .vagrant
 
 # Terraform

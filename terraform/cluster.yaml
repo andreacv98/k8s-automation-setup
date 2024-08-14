@@ -1,17 +1,17 @@
 # RKE Cluster Configuration
 nodes:
-  - address: 10.0.0.147
+  - address: 192.168.56.10
     user: vagrant
     role:
       - controlplane
       - etcd
     ssh_key_path: /home/andrea/vscode/k8s-automation-setup/.vagrant/machines/k8s-manager/virtualbox/private_key
-  - address: 10.0.0.148
+  - address: 192.168.56.11
     user: vagrant
     role:
       - worker
     ssh_key_path: /home/andrea/vscode/k8s-automation-setup/.vagrant/machines/k8s-worker-1/virtualbox/private_key
-  - address: 10.0.0.149
+  - address: 192.168.56.12
     user: vagrant
     role:
       - worker

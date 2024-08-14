@@ -9,7 +9,7 @@ Vagrant.configure("2") do |config|
     config.vm.boot_timeout = 600
     config.vm.define "k8s-manager" do |manager|
         manager.vm.box = "bento/ubuntu-22.04"
-        manager.vm.network "public_network", type: "bridged"
+        manager.vm.network "private_network", ip: "192.168.56.10"
         manager.vm.provision "ansible" do |ansible|
             ansible.playbook = "ansible/setup_k8s.yml"
             ansible.extra_vars = {
@@ -21,7 +21,7 @@ Vagrant.configure("2") do |config|
     (1..2).each do |i|
         config.vm.define "k8s-worker-#{i}" do |worker|
             worker.vm.box = "bento/ubuntu-22.04"
-            worker.vm.network "public_network", type: "bridged"
+            worker.vm.network "private_network", ip: "192.168.56.#{i + 10}"
             worker.vm.provision "ansible" do |ansible|
                 ansible.playbook = "ansible/setup_k8s.yml"
                 ansible.extra_vars = {
