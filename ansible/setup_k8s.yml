@@ -46,3 +46,27 @@
         name: "{{ ansible_user }}"
         groups: docker
         append: true
+
+    - name: Configure kernel parameters for Kubernetes
+      ansible.builtin.command: sysctl -w "{{ item.name }}={{ item.value }}"
+      check_mode: true
+      changed_when: false
+      with_items:
+        - { name: 'net.bridge.bridge-nf-call-iptables', value: 1 }
+        - { name: 'net.bridge.bridge-nf-call-ip6tables', value: 1 }
+        - { name: 'net.ipv4.ip_forward', value: 1 }
+
+    - name: Ensure kernel parameters persist on reboot
+      ansible.builtin.lineinfile:
+        path: /etc/sysctl.conf
+        state: present
+        line: "{{ item.name }} = {{ item.value }}"
+      with_items:
+        - { name: 'net.bridge.bridge-nf-call-iptables', value: 1 }
+        - { name: 'net.bridge.bridge-nf-call-ip6tables', value: 1 }
+        - { name: 'net.ipv4.ip_forward', value: 1 }
+
+    - name: Reload sysctl to apply changes
+      ansible.builtin.command:
+        cmd: sysctl -p
+      changed_when: false
