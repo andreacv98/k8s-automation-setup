@@ -13,6 +13,10 @@ terraform {
       source  = "hashicorp/local"
       version = "2.5.1"
     }
+    helm = {
+      source  = "hashicorp/helm"
+      version = "2.10.0"
+    }
   }
 }
 
@@ -42,30 +46,28 @@ resource "kubernetes_namespace" "kiratech_test" {
   depends_on = [ rke_cluster.foo ]
 }
 
-resource "kubernetes_pod" "kube_bench" {
-  metadata {
-    name      = "kube-bench"
-    namespace = kubernetes_namespace.kiratech_test.metadata[0].name
-  }
-  spec {
-    container {
-      name    = "kube-bench"
-      image   = "aquasec/kube-bench:latest"
-      command = ["kube-bench", "--json"]
-    }
-  }
+provider "helm" {
+  kubernetes {
+    config_path = local_sensitive_file.kube_cluster_yaml.filename
+  }  
 }
 
-resource "kubernetes_pod" "rancher_cis_benchmark" {
-  metadata {
-    name      = "rancher-cis-benchmark"
-    namespace = kubernetes_namespace.kiratech_test.metadata[0].name
-  }
-  spec {
-    container {
-      name    = "rancher-cis-benchmark"
-      image   = "rancher/cis-benchmark:v1.5.0"
-      command = ["rancher-cis-benchmark", "--json"]
-    }
-  }
+resource "helm_release" "rancher_cis_benchmark_crds" {
+  name       = "rancher-cis-benchmark-crd"
+  namespace  = "kube-system"
+  chart      = "rancher-cis-benchmark-crd"
+  repository = "https://charts.rancher.io"
+  version    = "5.2.0"
+
+  depends_on = [ kubernetes_namespace.kiratech_test ]
+}
+
+resource "helm_release" "rancher_cis_benchmark" {
+  name       = "rancher-cis-benchmark"
+  namespace  = kubernetes_namespace.kiratech_test.metadata[0].name
+  chart      = "rancher-cis-benchmark"
+  repository = "https://charts.rancher.io"
+  version    = "5.2.0"
+
+  depends_on = [ helm_release.rancher_cis_benchmark_crds ]
 }
