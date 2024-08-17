@@ -1,4 +1,5 @@
 terraform {
+  required_version = ">= 1.0"
   required_providers {
     rke = {
       source  = "rancher/rke"
@@ -7,6 +8,10 @@ terraform {
     kubernetes = {
       source  = "hashicorp/kubernetes"
       version = "2.13.1"
+    }
+    local = {
+      source  = "hashicorp/local"
+      version = "1.4.0"
     }
   }
 }
@@ -44,6 +49,20 @@ resource "kubernetes_pod" "kube_bench" {
       name    = "kube-bench"
       image   = "aquasec/kube-bench:latest"
       command = ["kube-bench", "--json"]
+    }
+  }
+}
+
+resource "kubernetes_pod" "rancher_cis_benchmark" {
+  metadata {
+    name      = "rancher-cis-benchmark"
+    namespace = kubernetes_namespace.kiratech_test.metadata[0].name
+  }
+  spec {
+    container {
+      name    = "rancher-cis-benchmark"
+      image   = "rancher/cis-benchmark:v1.5.0"
+      command = ["rancher-cis-benchmark", "--json"]
     }
   }
 }

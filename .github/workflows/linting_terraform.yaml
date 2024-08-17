@@ -1,0 +1,28 @@
+# Terraform linting
+name: Linting Terraform
+
+on: [push, pull_request]
+
+jobs:
+  linting:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.0.0
+
+      - name: Install tflint
+        run: |
+          curl -L "$(curl -s https://api.github.com/repos/terraform-linters/tflint/releases/latest | jq -r '.assets[] | select(.name | test("tflint_linux_amd64.zip")) | .browser_download_url')" -o tflint.zip
+          unzip tflint.zip
+          sudo mv tflint /usr/local/bin/
+          rm tflint.zip
+
+      - name: Linting Terraform
+        run: |
+          tflint
