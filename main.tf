@@ -11,7 +11,7 @@ terraform {
     }
     local = {
       source  = "hashicorp/local"
-      version = "1.4.0"
+      version = "2.5.1"
     }
   }
 }
@@ -27,6 +27,7 @@ resource "rke_cluster" "foo" {
 resource "local_sensitive_file" "kube_cluster_yaml" {
   filename = "${path.root}/kube_config_cluster.yml"
   content  = rke_cluster.foo.kube_config_yaml
+  depends_on = [ rke_cluster.foo ]
 }
 
 provider "kubernetes" {
@@ -37,6 +38,8 @@ resource "kubernetes_namespace" "kiratech_test" {
   metadata {
     name = "kiratech-test"
   }
+
+  depends_on = [ rke_cluster.foo ]
 }
 
 resource "kubernetes_pod" "kube_bench" {

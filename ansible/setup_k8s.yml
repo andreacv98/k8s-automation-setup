@@ -8,6 +8,19 @@
         update_cache: true
         upgrade: dist
 
+    - name: Disable swap for current session
+      ansible.builtin.command:
+        cmd: swapoff -a
+      become: true
+      changed_when: false
+
+    - name: Disable swap permanently, persist reboots
+      ansible.builtin.replace:
+        path: /etc/fstab
+        regexp: '^(\s*)([^#\n]+\s+)(\w+\s+)swap(\s+.*)$'
+        replace: '#\1\2\3swap\4'
+        backup: true
+
     - name: Install required packages
       ansible.builtin.apt:
         name:
