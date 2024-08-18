@@ -25,4 +25,4 @@ jobs:
           version: v3.5.4
 
       - name: Lint Helm charts
-        run: helm lint helm
+        run: helm lint helm/*
