@@ -36,7 +36,9 @@ The Terraform script provides the deployment of the `kube-bench` security benchm
 
 The choice of the `kube-bench` benchmark is motivated by the fact that it is a tool that is easy to use and that provides a good overview of the security of the Kubernetes cluster. It is widely used in the Kubernetes community and is a good starting point for the security of a Kubernetes cluster.
 
-## Application Deployment
+## Helm Application
+
+### Application Deployment
 
 The application designated for deployment is the Google Online Boutique. The application is a cloud-native microservices demo application that is used to demonstrate the use of Kubernetes. The application is composed of several services, including a frontend service that presents a graphical user interface accessible via a browser.
 
@@ -48,10 +50,26 @@ You can deploy the application by running the following command:
 helm install online-boutique ./helm/online-boutique
 ```
 
-## Application update
+### Application update
 
 The application can be updated by running the following command:
 
 ```bash
 helm upgrade online-boutique ./helm/online-boutique
 ```
+
+#### Downtime considerations
+
+All the deployment templates implements the default rolling update strategy of Kubernetes (details [here](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy)). This means that the application will be updated without downtime.
+
+Moreover thanks to a combination of readiness and liveness probes, Kubernetes when triggered of an update by Helm, will wait for the new pods to be ready before terminating the old ones. This ensures that the application is always available during the update process.
+
+### Application access
+
+The application can be accessed via a browser, but it first needs to be exposed to the outside world. This can be done by running a kubectl port-forward command:
+
+```bash
+kubectl port-forward service/frontend 8084:80
+```
+
+The application can then be accessed by opening a browser and navigating to http://localhost:8084.

@@ -34,3 +34,7 @@ ignore_docker_version: false
 # container runtime
 # Only available to enable in Kubernetes 1.21 and higher
 enable_cri_dockerd: true
+
+# Network plugin Calico
+network:
+  plugin: calico
