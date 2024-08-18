@@ -7,7 +7,7 @@ terraform {
     }
     kubernetes = {
       source  = "hashicorp/kubernetes"
-      version = "2.13.1"
+      version = "2.32.0"
     }
     local = {
       source  = "hashicorp/local"
@@ -16,6 +16,10 @@ terraform {
     helm = {
       source  = "hashicorp/helm"
       version = "2.10.0"
+    }
+    kubectl = {
+      source = "gavinbunney/kubectl"
+      version = "1.14.0"
     }
   }
 }
@@ -46,6 +50,14 @@ resource "kubernetes_namespace" "kiratech_test" {
   depends_on = [ rke_cluster.foo ]
 }
 
+resource "kubernetes_namespace" "cis_operator_system" {
+  metadata {
+    name = "cis-operator-system"
+  }
+
+  depends_on = [ rke_cluster.foo ]
+}
+
 provider "helm" {
   kubernetes {
     config_path = local_sensitive_file.kube_cluster_yaml.filename
@@ -59,12 +71,12 @@ resource "helm_release" "rancher_cis_benchmark_crds" {
   repository = "https://charts.rancher.io"
   version    = "5.2.0"
 
-  depends_on = [ kubernetes_namespace.kiratech_test ]
+  depends_on = [ kubernetes_namespace.cis_operator_system ]
 }
 
 resource "helm_release" "rancher_cis_benchmark" {
   name       = "rancher-cis-benchmark"
-  namespace  = kubernetes_namespace.kiratech_test.metadata[0].name
+  namespace  = "cis-operator-system"
   chart      = "rancher-cis-benchmark"
   repository = "https://charts.rancher.io"
   version    = "5.2.0"
@@ -72,17 +84,29 @@ resource "helm_release" "rancher_cis_benchmark" {
   depends_on = [ helm_release.rancher_cis_benchmark_crds ]
 }
 
-resource "kubernetes_manifest" "cis_scan" {
-  manifest = {
-    apiVersion = "cis.cattle.io/v1"
-    kind       = "ClusterScan"
-    metadata = {
-      name = "rke-cis-scan"
-    }
-    spec = {
-      scanProfileName = "rke-cis-1.8-permissive"
-    }
+provider "kubectl" {
+  config_path = local_sensitive_file.kube_cluster_yaml.filename
+}
+
+resource "kubectl_manifest" "cis_scan" {
+  yaml_body = <<YAML
+apiVersion: cis.cattle.io/v1
+kind: ClusterScan
+metadata:
+  name: rke-cis-scan
+spec:
+  scanProfileName: rke-profile-permissive-1.8
+YAML
+  
+    depends_on = [helm_release.rancher_cis_benchmark]
   }
 
-  depends_on = [helm_release.rancher_cis_benchmark]
+data "kubectl_path_documents" "kube_bench_remote" {
+  pattern = "./terraform/manifests/*.yaml"
+}
+
+resource "kubectl_manifest" "kube_bench_remote" {
+  for_each  = toset(data.kubectl_path_documents.kube_bench_remote.documents)
+  yaml_body = each.value
+  depends_on = [kubectl_manifest.cis_scan]
 }
