@@ -36,6 +36,12 @@ The Terraform script provides the deployment of the `kube-bench` security benchm
 
 The choice of the `kube-bench` benchmark is motivated by the fact that it is a tool that is easy to use and that provides a good overview of the security of the Kubernetes cluster. It is widely used in the Kubernetes community and is a good starting point for the security of a Kubernetes cluster.
 
+#### Rancher CIS Benchmark
+
+The Terraform script provides the deployment of the `rancher-cis-benchmark` security benchmark.
+
+This benchmark has been chosen since it leverages the `kube-bench` security benchmark, but it focus on checks suitable for Rancher Kubernetes Engine (RKE) clusters. Therefore, this benchmark is more suitable for the Kubernetes cluster that is being deployed.
+
 ## Helm Application
 
 ### Application Deployment
