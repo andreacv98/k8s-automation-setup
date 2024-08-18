@@ -71,3 +71,18 @@ resource "helm_release" "rancher_cis_benchmark" {
 
   depends_on = [ helm_release.rancher_cis_benchmark_crds ]
 }
+
+resource "kubernetes_manifest" "cis_scan" {
+  manifest = {
+    apiVersion = "cis.cattle.io/v1"
+    kind       = "ClusterScan"
+    metadata = {
+      name = "rke-cis-scan"
+    }
+    spec = {
+      scanProfileName = "rke-cis-1.8-permissive"
+    }
+  }
+
+  depends_on = [helm_release.rancher_cis_benchmark]
+}
